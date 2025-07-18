@@ -1,29 +1,133 @@
 # Medieval Text Annotator - User Manual
 
-## Quick Start
+## Installation & Setup
 
-### Installation
+### Step 1: Install Dependencies
 ```bash
 pip install google-generativeai pandas lxml backoff
 ```
 
-### Basic Usage
+### Step 2: Download the Code
+Save the complete implementation as `medieval_annotator.py` in your project directory.
+
+### Step 3: Create Your Script
+Create a new Python file (e.g., `my_annotation_script.py`) and import the module:
+
 ```python
+# Import the module
 from medieval_annotator import MedievalTextAnnotator
 
-# Initialize
+# Initialize with your API key
 annotator = MedievalTextAnnotator(api_key="your_gemini_api_key_here")
 
-# Annotate text
+# Your text to annotate
 text = "Teresa de Cartagena escribe en el convento de San Francisco..."
+
+# Annotate the text
 result = annotator.annotate_text(text)
 
-# Access results
+# Print results
 print(f"Total annotations: {result.total_annotations}")
 print(f"Processing time: {result.processing_time:.2f}s")
 ```
 
-## Complete API Reference
+### Step 4: Run Your Script
+```bash
+python my_annotation_script.py
+```
+
+## Project Structure
+```
+your_project/
+├── medieval_annotator.py    # The main code (copy from implementation)
+├── my_script.py            # Your custom script
+├── output/                 # Directory for saved files
+└── requirements.txt        # Dependencies
+```
+
+## Getting Gemini API Key
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create a new API key
+3. Copy the key and use it in your script
+
+## Complete Setup Example
+
+### requirements.txt
+```
+google-generativeai>=0.3.0
+pandas>=1.5.0
+lxml>=4.9.0
+backoff>=2.2.0
+```
+
+### my_annotation_script.py
+```python
+#!/usr/bin/env python3
+"""
+Example script showing how to use the Medieval Text Annotator
+"""
+
+# Import the annotator
+from medieval_annotator import MedievalTextAnnotator
+
+def main():
+    # Replace with your actual Gemini API key
+    API_KEY = "your_gemini_api_key_here"
+    
+    # Initialize the annotator
+    annotator = MedievalTextAnnotator(api_key=API_KEY)
+    
+    # Sample medieval Spanish text
+    text = """
+    En el nombre de Dios todopoderoso, yo Teresa de Cartagena, 
+    monja profesa en el monasterio de San Francisco, 
+    escribo esta obra para consolar a las almas devotas 
+    que sufren en este valle de lágrimas.
+    """
+    
+    # Validate the text first
+    is_valid, error_msg = annotator.validate_text(text)
+    if not is_valid:
+        print(f"Text validation failed: {error_msg}")
+        return
+    
+    print("Starting annotation process...")
+    
+    # Annotate the text
+    result = annotator.annotate_text(text)
+    
+    # Print results
+    print(f"\nAnnotation Results:")
+    print(f"- Total annotations: {result.total_annotations}")
+    print(f"- Processing time: {result.processing_time:.2f} seconds")
+    print(f"- Chunks processed: {result.chunk_count}")
+    
+    # Save results to files
+    if result.total_annotations > 0:
+        file_paths = annotator.save_results(
+            result=result,
+            output_dir="./output",
+            base_filename="my_annotations"
+        )
+        
+        print(f"\nFiles saved:")
+        for format_type, path in file_paths.items():
+            print(f"- {format_type.upper()}: {path}")
+    
+    # Show statistics
+    stats = annotator.get_statistics(result)
+    print(f"\nAnnotation Statistics:")
+    for annotation_type, count in stats.get('type_counts', {}).items():
+        print(f"- {annotation_type}: {count}")
+
+if __name__ == "__main__":
+    main()
+```
+
+### Run the script
+```bash
+python my_annotation_script.py
+```
 
 ### MedievalTextAnnotator Class
 
@@ -92,7 +196,51 @@ result.statistics          # Dictionary with detailed stats
 result.chunks              # List of ChunkAnnotation objects
 ```
 
-## Usage Examples
+## Deployment Options
+
+### Option 1: Local Desktop Script
+- Save `medieval_annotator.py` in your project folder
+- Create your custom script (see example above)
+- Run with: `python my_script.py`
+
+### Option 2: Jupyter Notebook
+```python
+# In a Jupyter cell
+%pip install google-generativeai pandas lxml backoff
+
+# Copy the medieval_annotator.py code to a cell, then:
+annotator = MedievalTextAnnotator(api_key="your_key")
+result = annotator.annotate_text("Your text here")
+```
+
+### Option 3: Google Colab
+```python
+# In Colab
+!pip install google-generativeai pandas lxml backoff
+
+# Upload medieval_annotator.py or copy the code
+# Then use as normal
+```
+
+### Option 4: Web Service (Flask)
+```python
+from flask import Flask, request, jsonify
+from medieval_annotator import MedievalTextAnnotator
+
+app = Flask(__name__)
+annotator = MedievalTextAnnotator(api_key="your_key")
+
+@app.route('/annotate', methods=['POST'])
+def annotate():
+    text = request.json.get('text')
+    result = annotator.annotate_text(text)
+    return jsonify(result.json_output)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+## Complete API Reference
 
 ### Example 1: Basic Annotation
 ```python
